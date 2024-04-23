@@ -1,0 +1,10 @@
+# Default values for skypilot-k8s-labeler.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+# This will deploy a daemonset to label gpu nodes 
+
+parent: skypilot
+namespace: skypilot-system
+
+gpu-image: us-central1-docker.pkg.dev/skypilot-375900/skypilotk8s/skypilot-gpu:latest # Using this image also serves as a way to "pre-pull" the image onto nodes
+cpu-image: us-central1-docker.pkg.dev/skypilot-375900/skypilotk8s/skypilot:latest

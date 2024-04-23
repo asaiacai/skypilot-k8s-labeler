@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ include "skypilot-k8s-labeler.fullname" . }}-gpu-labeler
+  namespace: {{ .Values.namespace }}
+spec:
+  template:
+    metadata:
+      labels:
+        parent: {{ .Values.parent }}
+        role: agent
+    spec:
+      tolerations:
+      # this toleration only schedules daemon on nodes already labeled by NVIDIA GPU Operator
+      - key: nvidia.com/gpu
+        operator: Exists
+        effect: NoSchedule
+      containers:
+      - name: gpu-labeler
+        image: {{ .Values.labeler.gpu-image }}
+        command:
+          - "python"
+          - "/label_gpus.py"
+        volumeMounts:
+        - name: label-script
+          mountPath: /label_gpus.py
+          subPath: label_gpus.py
+        env:
+        - name: MY_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        resources:
+          limits:
+            memory: 100Mi
+          requests:
+            cpu: 100m
+            memory: 100Mi
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: label-script
+        configMap:
+          name: gpu-labeler-script
+          defaultMode: 0744

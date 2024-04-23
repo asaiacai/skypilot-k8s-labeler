@@ -1,0 +1,30 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: node-patcher-role
+  namespace: {{ .Values.namespace }}
+  labels:
+    parent: {{ .Values.parent }}
+    job: {{ include "skypilot-k8s-labeler.fullname" . }}-gpu-labeler
+rules:
+- apiGroups: [""]
+  resources: ["nodes"]
+  verbs: ["patch"]
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: node-patcher-rolebinding
+  labels:
+    parent: {{ .Values.parent }}
+    job: {{ include "skypilot-k8s-labeler.fullname" . }}-gpu-labeler
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: node-patcher-role
+subjects:
+- kind: ServiceAccount
+  name: {{ include "skypilot-k8s-labeler.fullname" . }}-gpu-labeler-sa
+  namespace: {{ .Values.namespace }}

@@ -1,0 +1,36 @@
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: nodes-list
+rules:
+- apiGroups: [""]
+  resources: ["nodes"]
+  verbs: ["list"]
+
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: nodes-list
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: default
+roleRef:
+  kind: ClusterRole
+  name: nodes-list
+  apiGroup: rbac.authorization.k8s.io
+
+---
+kind: Pod
+metadata:
+  name: "{{ include "skypilot-k8s-labeler.fullname" . }}-test-show-gpus"
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: check-gpus
+      image: {{ .Values.cpu_image }}
+      command: ["/bin/bash"]
+      args: ["-c", "sky show-gpus --cloud kubernetes | grep 'No GPUs found' && exit 1"]
+  restartPolicy: Never
